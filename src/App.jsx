@@ -1,10 +1,18 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { AnimatePresence } from "framer-motion";
 import GameWorld from "./components/world/GameWorld";
+import WorldBoundary from "./components/world/WorldBoundary";
 import DialogueBox from "./components/overlay/DialogueBox";
 import SectionPanel from "./components/overlay/SectionPanel";
 import TouchControls from "./components/world/TouchControls";
+import PlainResume from "./components/plain/PlainResume";
 import { bootMessage, profile } from "./data/content";
+
+/** ?plain opens the readable page directly, and stays shareable as a link. */
+const PLAIN_PARAM = "plain";
+
+const wantsPlain = () =>
+  new URLSearchParams(window.location.search).has(PLAIN_PARAM);
 
 export default function App() {
   // Each dialogue gets a fresh id so identical text still remounts the box.
@@ -15,6 +23,7 @@ export default function App() {
     action: "Start",
   });
   const [panel, setPanel] = useState(null);
+  const [plain, setPlain] = useState(wantsPlain);
 
   const inputRef = useRef({ up: false, down: false, left: false, right: false });
   const nearRef = useRef(null);
@@ -42,7 +51,20 @@ export default function App() {
     if (nearRef.current) setPanel(nearRef.current.section);
   }, []);
 
+  // Keep the address bar honest without pushing history entries for what is
+  // really just two ways of reading one page.
+  const showPlain = useCallback(() => {
+    setPlain(true);
+    window.history.replaceState(null, "", `?${PLAIN_PARAM}`);
+  }, []);
+
+  const showWorld = useCallback(() => {
+    setPlain(false);
+    window.history.replaceState(null, "", window.location.pathname);
+  }, []);
+
   useEffect(() => {
+    if (plain) return;
     const onKey = (e) => {
       if (e.key === "Escape") {
         setPanel(null);
@@ -55,7 +77,7 @@ export default function App() {
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [interact]);
+  }, [interact, plain]);
 
   const frozen = Boolean(dialogue) || Boolean(panel);
 
@@ -71,54 +93,77 @@ export default function App() {
     input.right = false;
   }, [frozen]);
 
+  if (plain) return <PlainResume onPlay={showWorld} />;
+
   return (
-    <main className="relative h-dvh w-full overflow-hidden bg-black">
-      <GameWorld
-        inputRef={inputRef}
-        frozen={frozen}
-        onNear={handleNear}
-        onEnterRoom={handleEnterRoom}
-      />
+    <WorldBoundary fallback={<PlainResume />}>
+      <main className="relative h-dvh w-full overflow-hidden bg-black">
+        {/* First thing in the tab order: anyone who cannot play the game — or
+            would rather not — gets out of it before touching anything else. */}
+        <button
+          type="button"
+          onClick={showPlain}
+          className="sr-only focus:not-sr-only focus:absolute focus:left-3 focus:top-3 focus:z-40 focus:border focus:border-term-green focus:bg-black focus:px-3 focus:py-2 focus:text-sm focus:text-term-green"
+        >
+          Skip the game — read this as a plain page
+        </button>
 
-      {/* Sits over bright pixel art, so it needs a near-opaque plate to stay legible. */}
-      <div className="pointer-events-none absolute left-3 top-3 z-10 w-fit space-y-1 border border-term-border bg-black/85 px-2.5 py-1.5 text-[11px] leading-snug text-term-fg sm:left-5 sm:top-5 sm:text-xs">
-        <p>
-          <span className="text-term-green">{profile.name}</span>
-          <span className="text-term-fg/70"> — {profile.role}</span>
-        </p>
-        <p className="text-term-fg/70">
-          <span className="sm:hidden">
-            <span className="text-term-amber">pad</span> to walk ·{" "}
-            <span className="text-term-amber">ENTER</span> at a console
-          </span>
-          <span className="hidden sm:inline">
-            <span className="text-term-amber">WASD</span> /{" "}
-            <span className="text-term-amber">arrows</span> to walk ·{" "}
-            <span className="text-term-amber">ENTER</span> at a console to read
-          </span>
-        </p>
-      </div>
+        <GameWorld
+          inputRef={inputRef}
+          frozen={frozen}
+          onNear={handleNear}
+          onEnterRoom={handleEnterRoom}
+        />
 
-      {/* Nothing to steer while a dialogue or panel is up, and the pad would
-          otherwise sit underneath them. Tapping anywhere dismisses a dialogue. */}
-      {!frozen && <TouchControls inputRef={inputRef} onAction={interact} />}
+        {/* Sits over bright pixel art, so it needs a near-opaque plate to stay legible. */}
+        <div className="pointer-events-none absolute left-3 top-3 z-10 w-fit space-y-1 border border-term-border bg-black/85 px-2.5 py-1.5 text-[11px] leading-snug text-term-fg sm:left-5 sm:top-5 sm:text-xs">
+          <p>
+            <span className="text-term-green">{profile.name}</span>
+            <span className="text-term-fg/70"> — {profile.role}</span>
+          </p>
+          <p className="text-term-fg/70">
+            <span className="sm:hidden">
+              <span className="text-term-amber">pad</span> to walk ·{" "}
+              <span className="text-term-amber">ENTER</span> at a console
+            </span>
+            <span className="hidden sm:inline">
+              <span className="text-term-amber">WASD</span> /{" "}
+              <span className="text-term-amber">arrows</span> to walk ·{" "}
+              <span className="text-term-amber">ENTER</span> at a console to read
+            </span>
+          </p>
+          <p>
+            <button
+              type="button"
+              onClick={showPlain}
+              className="pointer-events-auto text-term-cyan underline-offset-2 hover:underline"
+            >
+              read it as a plain page →
+            </button>
+          </p>
+        </div>
 
-      <AnimatePresence>
-        {dialogue && (
-          <DialogueBox
-            key={dialogue.id}
-            text={dialogue.text}
-            action={dialogue.action}
-            onDismiss={() => setDialogue(null)}
-          />
-        )}
-      </AnimatePresence>
+        {/* Nothing to steer while a dialogue or panel is up, and the pad would
+            otherwise sit underneath them. Tapping anywhere dismisses a dialogue. */}
+        {!frozen && <TouchControls inputRef={inputRef} onAction={interact} />}
 
-      <AnimatePresence>
-        {panel && (
-          <SectionPanel section={panel} onClose={() => setPanel(null)} />
-        )}
-      </AnimatePresence>
-    </main>
+        <AnimatePresence>
+          {dialogue && (
+            <DialogueBox
+              key={dialogue.id}
+              text={dialogue.text}
+              action={dialogue.action}
+              onDismiss={() => setDialogue(null)}
+            />
+          )}
+        </AnimatePresence>
+
+        <AnimatePresence>
+          {panel && (
+            <SectionPanel section={panel} onClose={() => setPanel(null)} />
+          )}
+        </AnimatePresence>
+      </main>
+    </WorldBoundary>
   );
 }
