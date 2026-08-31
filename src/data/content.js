@@ -19,7 +19,8 @@
 export const profile = {
   name: "Aaditya Gupta",
   handle: "aaditya",
-  host: "sandbox",
+  // Shown as the prompt in each panel's title bar: aaditya@portfolio: ~/about
+  host: "portfolio",
   role: "Aspiring Data Scientist · AI/ML",
   location: "Vellore, India",
 
