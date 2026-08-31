@@ -25,7 +25,7 @@
  * frame box and the sheet size stay in step with each other.
  */
 .portrait {
-  --s: 3;
+  --s: 2;
   width: calc(16px * var(--s));
   height: calc(32px * var(--s));
   background-size: calc(384px * var(--s)) calc(32px * var(--s));

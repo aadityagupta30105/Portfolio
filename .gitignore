@@ -27,3 +27,6 @@ dist-ssr/
 # OS cruft
 .DS_Store
 Thumbs.db
+
+# Source archive for the tiles already extracted into public/tiles/.
+Modern_Interiors_Free_v2.2.zip

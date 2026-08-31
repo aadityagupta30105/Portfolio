@@ -1,4 +1,5 @@
-import { HITBOX, MAP_W, TILE, WORLD_H, WORLD_W } from "./constants.js";
+import { TILE } from "./constants.js";
+import { isBlocked } from "./player.js";
 
 /**
  * Ambient characters. They wander a short leash around a home tile, pausing
@@ -43,21 +44,6 @@ export function createNpcs() {
   }));
 }
 
-function blocked(cx, cy, solid) {
-  const x0 = cx - HITBOX.w / 2;
-  const x1 = cx + HITBOX.w / 2 - 0.01;
-  const y0 = cy - HITBOX.h;
-  const y1 = cy - 0.01;
-  if (x0 < 0 || y0 < 0 || x1 >= WORLD_W || y1 >= WORLD_H) return true;
-
-  for (let ty = Math.floor(y0 / TILE); ty <= Math.floor(y1 / TILE); ty++) {
-    for (let tx = Math.floor(x0 / TILE); tx <= Math.floor(x1 / TILE); tx++) {
-      if (solid[ty * MAP_W + tx]) return true;
-    }
-  }
-  return false;
-}
-
 function repick(n) {
   // Head home when the leash runs out, otherwise pick a direction at random.
   const dx = n.x - n.homeX;
@@ -93,7 +79,8 @@ export function stepNpcs(npcs, dt, solid) {
     const nx = n.x + vx * step;
     const ny = n.y + vy * step;
 
-    if (blocked(nx, ny, solid)) {
+    // Same feet-anchored box the player uses, so an NPC fits exactly where you do.
+    if (isBlocked(solid, nx, ny)) {
       // Walked into something, so turn rather than grinding against it.
       repick(n);
       continue;

@@ -1,4 +1,4 @@
-import { contact } from "../../data/content";
+import { contact, credits } from "../../data/content";
 import SectionHeader from "./SectionHeader";
 
 export default function Contact() {
@@ -28,6 +28,12 @@ export default function Contact() {
           </li>
         ))}
       </ul>
+
+      {/* The tileset's licence is non-commercial and the artist deserves the
+          credit somewhere a visitor will actually see it. */}
+      <p className="border-t border-term-border pt-4 text-xs text-term-dim">
+        {credits.art}
+      </p>
     </section>
   );
 }

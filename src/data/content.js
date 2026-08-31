@@ -213,3 +213,12 @@ export const contact = {
     },
   ],
 };
+
+// ── CREDITS ──────────────────────────────────────────────────────────────────
+// The tileset ships under a free, non-commercial licence (public/tiles/
+// LICENSE.txt). Crediting the artist on the site itself rather than only in a
+// text file inside the build is the least this should do.
+export const credits = {
+  art: "Pixel art: Modern Interiors by LimeZu (free version — non-commercial use).",
+  built: "Built with React, Vite and a hand-drawn canvas renderer.",
+};
