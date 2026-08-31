@@ -1,0 +1,29 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+dist-ssr/
+.vite/
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+*.local
+
+# Personal documents kept outside the repo
+*.pdf
+
+# GitHub Pages writes this at the repo root when a custom domain is set.
+# The published one lives at public/CNAME so the build copies it into dist.
+/CNAME
+
+# Editor and tool config
+.vscode/
+.idea/
+.claude/
+
+# OS cruft
+.DS_Store
+Thumbs.db

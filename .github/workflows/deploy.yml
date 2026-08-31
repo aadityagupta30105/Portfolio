@@ -1,0 +1,57 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Let a running deploy finish rather than cancelling it half-published.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      # Map, movement and sprite-rect guards. Cheap to run, and they catch the
+      # kind of breakage that is invisible until you walk into it.
+      - run: npm run check
+
+      - run: npm run build
+
+      # enablement turns Pages on for the repo if it is not already, so the
+      # first deploy does not need anyone to flip a switch in Settings.
+      - uses: actions/configure-pages@v5
+        with:
+          enablement: true
+
+      # public/CNAME is copied into dist by the build, which is what binds the
+      # custom domain to the published artifact.
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
