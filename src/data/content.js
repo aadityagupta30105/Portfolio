@@ -55,13 +55,13 @@ export const about = {
   paragraphs: [
     "I'm an aspiring Data Scientist with a keen and growing interest in AI and Machine Learning. I'm currently in my B.Tech in Computer Science at VIT Vellore, and most of what I build starts with a dataset and a question I can't answer yet.",
     "I like the whole path from raw data to something a person can act on — cleaning it, modelling it, and then making the result legible. That's as true of a spectral classification tool as it is of a Power BI dashboard a factory team actually opens in the morning.",
-    "Right now I'm going deeper into machine learning and generative AI, and looking for internships and collaborations where I can keep doing that on real problems.",
+    "Right now I'm going deeper into machine learning and generative AI, and into what it takes to make a model useful outside a notebook. I'm always open to collaborating on an interesting problem.",
   ],
   stats: [
     { label: "focus", value: "data science · AI/ML" },
     { label: "studying", value: "B.Tech CSE, VIT Vellore (CGPA 8.79)" },
     { label: "spoken", value: "English · Hindi · Japanese (basic)" },
-    { label: "status", value: "open to internships & collaboration" },
+    { label: "status", value: "open to collaboration" },
   ],
 };
 
@@ -201,7 +201,7 @@ export const leadership = [
 // ── CONTACT ──────────────────────────────────────────────────────────────────
 export const contact = {
   blurb:
-    "Looking for data science and AI/ML internships, and happy to talk about any project involving messy data and a real question.",
+    "Open to collaboration — happy to talk about any project involving messy data and a real question.",
   channels: [
     { label: "email", value: profile.email, href: `mailto:${profile.email}` },
     { label: "github", value: "aadityagupta30105", href: profile.github },
