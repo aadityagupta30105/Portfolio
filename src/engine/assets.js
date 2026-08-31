@@ -1,3 +1,5 @@
+import { LABELS } from "./mapData.js";
+
 /**
  * Sprite sheets from LimeZu's "Modern Interiors" (free version, 16x16).
  * See public/tiles/LICENSE.txt — free tier is non-commercial use only.
@@ -31,4 +33,25 @@ export async function loadSheets() {
   const names = Object.keys(SOURCES);
   const images = await Promise.all(names.map((n) => loadImage(SOURCES[n])));
   return Object.fromEntries(names.map((n, i) => [n, images[i]]));
+}
+
+/**
+ * Waits for the typeface the world labels are painted in.
+ *
+ * The tilesets are same-origin while the font is two cross-origin hops away
+ * (the Google Fonts stylesheet, then the file it points at), so the images
+ * routinely win the race. Since the labels are drawn into the offscreen world
+ * canvas once and never again, losing that race bakes a fallback typeface into
+ * the map for the rest of the visit.
+ */
+export async function loadLabelFont() {
+  if (!document.fonts?.load) return;
+  const sizes = new Set(LABELS.map((l) => l.size));
+  try {
+    await Promise.all(
+      [...sizes].map((size) => document.fonts.load(`bold ${size}px "Fira Code"`)),
+    );
+  } catch {
+    // A webfont that never arrives is cosmetic; never hold the world on it.
+  }
 }

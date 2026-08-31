@@ -7,7 +7,7 @@ import {
   WORLD_W,
 } from "../../engine/constants.js";
 import { buildCollision } from "../../engine/mapData.js";
-import { loadSheets } from "../../engine/assets.js";
+import { loadLabelFont, loadSheets } from "../../engine/assets.js";
 import { renderWorld } from "../../engine/tiles.js";
 import { spriteFrame } from "../../engine/sprite.js";
 import {
@@ -57,10 +57,13 @@ export default function GameWorld({ inputRef, frozen, onNear, onEnterRoom }) {
   const solid = useMemo(() => buildCollision(), []);
   const world = useMemo(() => (sheets ? renderWorld(sheets) : null), [sheets]);
 
+  // The world's labels are painted into the offscreen canvas exactly once, so
+  // the label font has to be in hand before that happens — otherwise a cold
+  // load bakes a fallback typeface in and nothing ever redraws it.
   useEffect(() => {
     let alive = true;
-    loadSheets().then(
-      (loaded) => alive && setSheets(loaded),
+    Promise.all([loadSheets(), loadLabelFont()]).then(
+      ([loaded]) => alive && setSheets(loaded),
       (err) => alive && setError(err.message),
     );
     return () => {
@@ -71,6 +74,12 @@ export default function GameWorld({ inputRef, frozen, onNear, onEnterRoom }) {
   // Keyboard writes into the same input object the touch pad mutates.
   useEffect(() => {
     const set = (e, value) => {
+      // Leave browser shortcuts alone. Ctrl/Cmd + A, S and D all collide with
+      // the walk bindings, and swallowing them means you cannot even select
+      // the text in an open panel to copy it.
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
+      // An open panel owns the keyboard, so arrow keys still scroll it.
+      if (frozenRef.current) return;
       const key = KEY_MAP[e.key];
       if (!key) return;
       e.preventDefault();
