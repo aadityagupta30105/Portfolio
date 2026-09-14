@@ -1,0 +1,136 @@
+@import "tailwindcss";
+
+@theme {
+  --font-mono: "Fira Code", "Space Mono", ui-monospace, SFMono-Regular, Menlo,
+    monospace;
+
+  --color-term-bg: #000000;
+  --color-term-panel: #060806;
+  --color-term-raised: #0b0f0c;
+  --color-term-border: #1b2a1f;
+  --color-term-dim: #4e6455;
+  --color-term-fg: #c6e8d4;
+  --color-term-green: #00ff9c;
+  --color-term-amber: #ffb000;
+  --color-term-cyan: #35d0e0;
+  --color-term-red: #ff5f56;
+
+  --animate-blink: blink 1.05s steps(1, end) infinite;
+  --animate-flicker: flicker 6s linear infinite;
+}
+
+/* Dialogue portrait: steps through the idle frames; --s is the pixel scale. */
+.portrait {
+  --s: 2;
+  width: calc(16px * var(--s));
+  height: calc(32px * var(--s));
+  background-size: calc(384px * var(--s)) calc(32px * var(--s));
+  background-repeat: no-repeat;
+  background-position: calc(-288px * var(--s)) 0;
+  image-rendering: pixelated;
+  animation: portrait-idle 0.9s steps(6) infinite;
+}
+
+@media (min-width: 640px) {
+  .portrait {
+    --s: 4;
+  }
+}
+
+/* front-facing idle is frames 18-24 */
+@keyframes portrait-idle {
+  from {
+    background-position: calc(-288px * var(--s)) 0;
+  }
+  to {
+    background-position: calc(-384px * var(--s)) 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .portrait {
+    animation: none;
+  }
+}
+
+@keyframes blink {
+  0%,
+  50% {
+    opacity: 1;
+  }
+  50.01%,
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes flicker {
+  0%,
+  100% {
+    opacity: 0.035;
+  }
+  47% {
+    opacity: 0.045;
+  }
+  52% {
+    opacity: 0.02;
+  }
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  background-color: var(--color-term-bg);
+  color: var(--color-term-fg);
+  font-family: var(--font-mono);
+  -webkit-font-smoothing: antialiased;
+  overscroll-behavior-y: none;
+}
+
+::selection {
+  background: var(--color-term-green);
+  color: #000;
+}
+
+/* themed scrollbar */
+.term-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-term-border) transparent;
+}
+.term-scroll::-webkit-scrollbar {
+  width: 8px;
+}
+.term-scroll::-webkit-scrollbar-thumb {
+  background: var(--color-term-border);
+  border-radius: 9999px;
+}
+
+.text-glow {
+  text-shadow: 0 0 6px rgb(0 255 156 / 0.45), 0 0 18px rgb(0 255 156 / 0.15);
+}
+.text-glow-amber {
+  text-shadow: 0 0 6px rgb(255 176 0 / 0.4);
+}
+
+.cursor-block {
+  animation: var(--animate-blink);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  /* keep the caret solid rather than frozen hidden */
+  .cursor-block {
+    animation: none !important;
+    opacity: 1 !important;
+  }
+}
